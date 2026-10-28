@@ -1,0 +1,9 @@
+{
+  "approved": true,
+  "tag": "tracker-v0.0.1",
+  "component": "tracker",
+  "version": "0.0.1",
+  "sha256": "474f9bdf8408378efe81e179d038080c4b96fc782ac29bf7512bc251dcd6bd49",
+  "title": "도깨비의 세계 성장 기록기 측정 센터 v0.0.1",
+  "notes": "측정 도구 UI 개편 시험 업데이트. 기존 기록과 설정 유지."
+}
