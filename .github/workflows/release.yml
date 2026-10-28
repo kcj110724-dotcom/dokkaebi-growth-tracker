@@ -1,0 +1,51 @@
+name: Dokkaebi approved release
+
+on:
+  workflow_dispatch:
+    inputs:
+      request:
+        description: 'Approved release request file'
+        required: true
+        type: string
+        default: 'release-requests/tracker-v0.0.1.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dokkaebi-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out release files
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Verify approved package
+        env:
+          REQUEST: ${{ inputs.request }}
+        run: |
+          python scripts/prepare_release.py "$REQUEST"
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          TAG="$(cat .release-out/tag.txt)"
+          ASSET="$(cat .release-out/asset-name.txt)"
+          TITLE="$(cat .release-out/title.txt)"
+          if gh release view "$TAG" --repo "$GH_REPO" >/dev/null 2>&1; then
+            echo 'Release already exists; refusing to overwrite' >&2
+            exit 1
+          fi
+          gh release create "$TAG" \
+            ".release-out/$ASSET" ".release-out/$ASSET.sha256" \
+            --repo "$GH_REPO" --target main --title "$TITLE" \
+            --notes-file .release-out/notes.md --latest
