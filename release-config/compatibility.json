@@ -1,6 +1,6 @@
 {
   "status": "pending",
   "launcher_version": "0.0.2",
-  "reason": "Latest launcher source is missing. Release discovery, version comparison, SHA verification, rollback and user_data preservation must be tested with the real launcher before publishing.",
+  "reason": "Launcher v0.0.2 imported and isolated integration tests passed. launch_host.pyw is missing, so process restart/automatic health rollback remains unverified. Legacy tracker 8.x/9.x to 0.x migration policy is unresolved. Keep publishing blocked.",
   "evidence": []
 }

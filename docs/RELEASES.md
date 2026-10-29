@@ -1,5 +1,9 @@
 # 승인 기반 Windows 배포
 
+> 런처 통합 후 최신 상태는 [LAUNCHER_INTEGRATION.md](LAUNCHER_INTEGRATION.md)를 참조한다.
+> 아래 초기 구축 기록 중 런처 소스/빌드가 없다는 설명은 해당 문서로 대체된다.
+> 승인 환경과 게시 차단 정책은 계속 적용한다.
+
 ## 구현 범위와 현재 차단 조건
 
 기존 `.github/workflows/release.yml`, `scripts/prepare_release.py`,

@@ -71,10 +71,8 @@ class DistributionTests(unittest.TestCase):
             self.assertEqual(manifest['entrypoint'], 'tracker.py')
             self.assertEqual(set(archive.namelist()), {'manifest.json', *('app/' + p for p in SOURCE_FILES)})
 
-    def test_missing_launcher_blocks_build_and_validation(self):
+    def test_tracker_zip_cannot_be_used_as_launcher(self):
         with self.assertRaises(ValueError):
-            build('launcher', SHA, self.output)
-        with self.assertRaises(SystemExit):
             validate_zip(self.payload, '0.0.2', 'launcher')
 
     def test_invalid_source_sha_blocks_build(self):

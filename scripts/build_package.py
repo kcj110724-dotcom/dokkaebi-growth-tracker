@@ -27,35 +27,39 @@ SOURCE_FILES = (
 
 
 def build(component, source_sha, output, root=ROOT):
-    if component != 'tracker':
-        raise ValueError('Launcher v0.0.2 source and packaging contract are missing; no substitute will be built')
+    if component not in NAME_BY_COMPONENT:
+        raise ValueError('Unknown component')
     if not re.fullmatch(r'[0-9a-f]{40}', source_sha):
         raise ValueError('A full source commit SHA is required')
-    config = json.loads((root / 'release-config' / 'tracker.json').read_text(encoding='utf-8'))
+    config = json.loads((root / 'release-config' / (component + '.json')).read_text(encoding='utf-8'))
     version = config['version']
     if not re.fullmatch(r'\d+\.\d+\.\d+', version):
         raise ValueError('Invalid component version')
     if (config['source'], config['entrypoint'], config['asset'], config['component']) != (
-            'src/tracker', 'tracker.py', NAME_BY_COMPONENT[component], component):
+            'src/' + component, 'tracker.py' if component == 'tracker' else 'launcher.pyw', NAME_BY_COMPONENT[component], component):
         raise ValueError('Existing tracker packaging contract must be preserved')
     source = root / config['source']
     files = {}
     # Explicit allowlist prevents local settings, records, logs and imported art
     # from accidentally becoming public release assets.
-    for relative in SOURCE_FILES:
+    source_files = SOURCE_FILES if component == 'tracker' else tuple(json.loads(
+        (source / 'manifest.json').read_text(encoding='utf-8'))['files'])
+    for relative in source_files:
         path = source / relative
         if any(p.is_symlink() for p in (path, *path.parents)):
             raise ValueError('Symlinks cannot be packaged: ' + relative)
         files[relative] = path.read_bytes()
-        if relative.endswith('.py'):
+        if relative.endswith(('.py', '.pyw')):
             compile(files[relative], relative, 'exec')
     manifest = {'schema': 1, 'version': version, 'entrypoint': config['entrypoint'],
                 'files': {p: hashlib.sha256(b).hexdigest() for p, b in sorted(files.items())}}
+    if component == 'launcher':
+        manifest['kind'] = 'launcher'
     output = Path(output)
     output.mkdir(parents=True, exist_ok=True)
     asset = output / config['asset']
     members = {'manifest.json': json.dumps(manifest, ensure_ascii=False, indent=2).encode('utf-8')}
-    members.update({'app/' + p: b for p, b in files.items()})
+    members.update({('app/' if component == 'tracker' else '') + p: b for p, b in files.items()})
     with zipfile.ZipFile(asset, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
         for name, data in sorted(members.items()):
             info = zipfile.ZipInfo(name, date_time=(2020, 1, 1, 0, 0, 0))

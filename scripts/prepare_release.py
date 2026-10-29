@@ -42,8 +42,16 @@ def get_sha(data):
 
 def validate_zip(payload: bytes, version: str, component: str):
     import io
+    if component == 'launcher':
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src/launcher/launcher'))
+        from unified_updater import validate_launcher_archive
+        with zipfile.ZipFile(io.BytesIO(payload)) as archive:
+            if any(not safe_member(i.filename) for i in archive.infolist()):
+                fail('unsafe Windows launcher ZIP member')
+        validate_launcher_archive(payload, version)
+        return
     if component != 'tracker':
-        fail('launcher source/manifest contract not supplied; refusing unverified launcher package')
+        fail('unknown component')
     with zipfile.ZipFile(io.BytesIO(payload)) as archive:
         infos = archive.infolist()
         if len(infos) > MAX_MEMBERS:
