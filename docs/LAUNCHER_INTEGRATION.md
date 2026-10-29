@@ -45,7 +45,11 @@ manifest 검증, 구성요소별 Release 발견, 다운로드 해시 불일치 �
 
 검토 이미지: `dist/previews/discovery.png`, `dist/previews/success.png`.
 이미지의 0.0.3은 테스트용 발견 버전이며 제품 버전을 올린 것이 아니다.
-이번 통합 변경의 GitHub Actions는 아직 실행하지 않았다.
+통합 커밋 `a515a888db7af1a2fff20c035f78ecf78a46fc75`의 실제 Windows CI가 성공했다.
+[실행 40845092125](https://github.com/kcj110724-dotcom/dokkaebi-growth-tracker/actions/runs/40845092125)에서
+테스트 35개, GITHUB_TOKEN을 사용한 필수 승인자 설정 확인, 팝업 렌더링,
+기록기 UI smoke test, tracker/launcher 각각의 패키지 생성과 artifact 업로드를 통과했다.
+Release 워크플로 실행이나 main 병합은 수행하지 않았다.
 
 ## 남은 자료와 차단 조건
 
