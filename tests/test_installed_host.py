@@ -120,7 +120,8 @@ class InstalledHostTests(unittest.TestCase):
         legacy = self.root / 'versions/v8.0.0'
         legacy.mkdir(parents=True)
         (legacy / 'tracker.py').write_text('pass')
-        self.assertEqual(self.store.current_dir(), legacy)
+        # Windows CI TEMP can use an 8.3 alias (RUNNER~1); compare identity.
+        self.assertTrue(self.store.current_dir().samefile(legacy))
         self.assertTrue((self.store.current_dir() / 'tracker.py').exists())
 
     def test_fixed_host_saves_in_real_conflicting_windows_layout(self):

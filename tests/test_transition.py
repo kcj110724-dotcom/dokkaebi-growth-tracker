@@ -92,7 +92,7 @@ class MigrationInstallTests(unittest.TestCase):
                 manager.install(self.launcher,'0.0.2')
                 self.assertEqual(manager.active(),'0.0.2')
                 self.assertEqual(manager.rollback(),old)
-                self.assertEqual(manager.entry(),prior/'launcher.pyw')
+                self.assertTrue(manager.entry().samefile(prior/'launcher.pyw'))
 
     def test_launcher_interrupted_extraction_keeps_legacy(self):
         from unified_updater import LauncherManager
