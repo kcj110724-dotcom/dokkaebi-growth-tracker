@@ -4,48 +4,67 @@ on:
   workflow_dispatch:
     inputs:
       request:
-        description: 'Approved release request file'
+        description: 'Reviewed artifact release request committed on main'
         required: true
         type: string
-        default: 'release-requests/tracker-v0.0.1.json'
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: dokkaebi-release
   cancel-in-progress: false
 
 jobs:
-  publish:
+  preflight:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    timeout-minutes: 5
+    outputs:
+      run_id: ${{ steps.gate.outputs.run_id }}
+      artifact: ${{ steps.gate.outputs.artifact }}
     steps:
-      - name: Check out release files
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
+          fetch-depth: 0
           persist-credentials: false
-
-      - name: Verify approved package
-        env:
-          REQUEST: ${{ inputs.request }}
-        run: |
-          python scripts/prepare_release.py "$REQUEST"
-
-      - name: Publish GitHub Release
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify request, build provenance and owner approval configuration
+        id: gate
         env:
           GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-        run: |
-          TAG="$(cat .release-out/tag.txt)"
-          ASSET="$(cat .release-out/asset-name.txt)"
-          TITLE="$(cat .release-out/title.txt)"
-          if gh release view "$TAG" --repo "$GH_REPO" >/dev/null 2>&1; then
-            echo 'Release already exists; refusing to overwrite' >&2
-            exit 1
-          fi
-          gh release create "$TAG" \
-            ".release-out/$ASSET" ".release-out/$ASSET.sha256" \
-            --repo "$GH_REPO" --target main --title "$TITLE" \
-            --notes-file .release-out/notes.md --latest
+          REQUEST: ${{ inputs.request }}
+        run: python scripts/release_gate.py "$REQUEST"
+
+  publish:
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: production-release
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Download the approved Windows build without rebuilding
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.preflight.outputs.artifact }}
+          path: approved-artifact
+          run-id: ${{ needs.preflight.outputs.run_id }}
+          github-token: ${{ github.token }}
+      - name: Recheck approval policy and SHA then publish complete assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUEST: ${{ inputs.request }}
+        run: python scripts/publish_release.py "$REQUEST" approved-artifact

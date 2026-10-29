@@ -1,0 +1,49 @@
+name: Dokkaebi Windows build and test
+
+on:
+  pull_request:
+  push:
+    branches: [main, 'codex/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tracker:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test packaging, release gates and data compatibility
+        run: python -m unittest discover -s tests -v
+      - name: Install existing Windows dependencies
+        run: python -m pip install -r src/tracker/requirements.txt
+      - name: Build existing launcher-compatible Python payload
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: python scripts/build_package.py --source-sha "$env:SOURCE_SHA"
+      - name: Smoke test the packaged dashboard in isolated user_data
+        run: python scripts/smoke_tracker.py dist/tracker/dokkaebi-app.zip
+      - name: Record build dependency versions
+        shell: pwsh
+        run: python -m pip freeze | Set-Content -Encoding utf8 dist/tracker/dependencies.txt
+      - name: Upload reviewable package (never a Release)
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-tracker-${{ github.sha }}
+          path: dist/tracker/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Summarize the exact approval candidate
+        shell: pwsh
+        run: |
+          '### Windows tracker build' >> $env:GITHUB_STEP_SUMMARY
+          "Commit: $env:GITHUB_SHA" >> $env:GITHUB_STEP_SUMMARY
+          "Run: $env:GITHUB_RUN_ID" >> $env:GITHUB_STEP_SUMMARY
+          Get-Content dist/tracker/build-info.json >> $env:GITHUB_STEP_SUMMARY

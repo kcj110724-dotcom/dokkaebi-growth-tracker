@@ -1,0 +1,13 @@
+{
+  "approved": false,
+  "mode": "artifact",
+  "component": "tracker",
+  "version": "REPLACE_VERSION",
+  "tag": "tracker-vREPLACE_VERSION",
+  "source_sha": "REPLACE_WITH_40_CHARACTER_TESTED_MAIN_COMMIT",
+  "build_run_id": 0,
+  "sha256": "REPLACE_WITH_PACKAGE_SHA256_FROM_BUILD_INFO",
+  "title": "도깨비의 세계 성장 기록기 배포 제목",
+  "notes": "검증한 변경 사항과 호환성 결과를 작성하세요.",
+  "latest": false
+}

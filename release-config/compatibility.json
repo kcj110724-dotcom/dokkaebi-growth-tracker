@@ -1,0 +1,6 @@
+{
+  "status": "pending",
+  "launcher_version": "0.0.2",
+  "reason": "Latest launcher source is missing. Release discovery, version comparison, SHA verification, rollback and user_data preservation must be tested with the real launcher before publishing.",
+  "evidence": []
+}
