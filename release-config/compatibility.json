@@ -1,6 +1,6 @@
 {
   "status": "pending",
   "launcher_version": "0.0.2",
-  "reason": "Launcher v0.0.2 imported and isolated integration tests passed. launch_host.pyw is missing, so process restart/automatic health rollback remains unverified. Legacy tracker 8.x/9.x to 0.x migration policy is unresolved. Keep publishing blocked.",
+  "reason": "Host import collision, component-scoped legacy epoch reset, and v-prefixed directory compatibility fixed in repository. Isolated tests cover recovery. Real installed bootstrap/updater has not been replaced; rollout requires explicit approval and a new release version. Publishing remains blocked.",
   "evidence": []
 }

@@ -29,7 +29,7 @@ ROOT = Path(os.environ.get('DOKKAEBI_LAUNCHER_ROOT', str(CODE_ROOT))).resolve()
 ASSET_ROOT = CODE_ROOT/'assets' if (CODE_ROOT/'assets').is_dir() else ROOT/'assets'
 sys.path.insert(0, str(CODE_ROOT/'launcher'))
 from update_engine import Store, get_release_zip, version_tuple, atomic_json
-from unified_updater import get_available_releases, LauncherManager
+from unified_updater import get_available_releases, LauncherManager, is_update, release_order
 
 W,H=1440,810
 # Fixed aspect-ratio launcher sizes (16:9), chosen from the settings page.
@@ -596,7 +596,7 @@ class Launcher:
     def _notes(self,im):
         self._panel_page(im,'패치노트','공식 GitHub Releases의 변경 사항을 확인해. 실제 공개된 내용만 표시해.')
         self._panel(im,(221,275,495,669),(17,27,69,215),(79,90,156,143),13)
-        versions=sorted(self._known_versions(),key=version_tuple,reverse=True)
+        versions=sorted(self._known_versions(),key=lambda v:release_order('app',v),reverse=True)
         for i,v in enumerate(versions[:6]):
             y=296+i*59
             self._panel(im,(238,y,477,y+47),(72,53,151,206) if i==0 else (30,42,88,178),None,9)
@@ -612,11 +612,11 @@ class Launcher:
         self._button(im,'다시 확인','check',(955,632,1201,676),accent='violet')
 
     def _known_versions(self):
-        return [p.name for p in self.store.versions.iterdir() if p.is_dir() and p.name[:1].isdigit() and (p/'tracker.py').is_file()]
+        return self.store.known_versions()
 
     def _versions(self,im):
         self._panel_page(im,'버전 관리 · 복구','업데이트는 새로운 폴더에 설치되며, 기존 버전과 기록은 유지돼.')
-        versions=sorted(self._known_versions(),key=version_tuple,reverse=True)
+        versions=sorted(self._known_versions(),key=lambda v:release_order('app',v),reverse=True)
         for i,v in enumerate(versions[:6]):
             y=285+i*63
             self._panel(im,(226,y,1219,y+54),(20,33,77,215),(64,81,147,162),11)
@@ -1310,8 +1310,8 @@ class Launcher:
         self.available_releases=res
         candidates=[]
         app=res.get('app');launcher=res.get('launcher')
-        if app and version_tuple(app['version'])>version_tuple(self.store.state['current']):candidates.append(app)
-        if launcher and version_tuple(launcher['version'])>version_tuple(self.launcher_manager.active()):candidates.append(launcher)
+        if app and is_update(app,'app',self.store.state['current']):candidates.append(app)
+        if launcher and is_update(launcher,'launcher',self.launcher_manager.active()):candidates.append(launcher)
         # Launcher changes first so new update logic is available before app updates.
         self.release=next((c for c in candidates if c['kind']=='launcher'),candidates[0] if candidates else None)
         self.update_kind=self.release['kind'] if self.release else None
@@ -1364,7 +1364,7 @@ class Launcher:
         if kind=='app' and self._running():
             messagebox.showwarning('기록기 실행 중','성장 기록기를 종료한 다음 업데이트해 줘.',parent=self.root);return
         active=self.launcher_manager.active() if kind=='launcher' else self.store.state['current']
-        if version_tuple(self.release['version'])<=version_tuple(active):return
+        if not is_update(self.release,kind,active):return
         self.modal='progress';self.progress=0;self.download_bytes=(0,0)
         self.status='기존 기록을 먼저 백업하고 있어.';self._mark()
         release=self.release.copy()

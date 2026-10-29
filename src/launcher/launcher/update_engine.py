@@ -231,12 +231,23 @@ class Store:
 
     def current_dir(self):
         current=self._state_cache.get('current','8.0.0')
-        # Only canonical numeric paths are used; no path traversal via state.json.
-        return self.versions/canonical_version(current)
+        return self.version_dir(current)
+
+    def version_dir(self,version):
+        version=canonical_version(version)
+        canonical=self.versions/version
+        legacy=self.versions/('v'+version)
+        # Read compatibility only: never rename, merge or delete old folders.
+        return canonical if (canonical/'tracker.py').is_file() or not (legacy/'tracker.py').is_file() else legacy
+
+    def known_versions(self):
+        return sorted({canonical_version(p.name) for p in self.versions.iterdir()
+                       if p.is_dir() and VERSION_RE.fullmatch(p.name) and (p/'tracker.py').is_file()},
+                      key=version_tuple)
 
     def set_current(self,version):
         version=canonical_version(version)
-        if not (self.versions/version/'tracker.py').is_file():
+        if not (self.version_dir(version)/'tracker.py').is_file():
             raise ValueError('해당 버전의 프로그램 파일이 없어.')
         previous=[v for v in self._state_cache.get('previous',[]) if v!=version and VERSION_RE.fullmatch(str(v))]
         old=self._state_cache.get('current')
@@ -248,7 +259,7 @@ class Store:
 
     def rollback(self):
         current=self._state_cache.get('current','')
-        options=[v for v in self._state_cache.get('previous',[]) if v!=current and VERSION_RE.fullmatch(str(v)) and (self.versions/v/'tracker.py').is_file()]
+        options=[v for v in self._state_cache.get('previous',[]) if v!=current and VERSION_RE.fullmatch(str(v)) and (self.version_dir(v)/'tracker.py').is_file()]
         if not options:
             raise ValueError('되돌릴 수 있는 이전 버전이 없어.')
         selected=options[0]

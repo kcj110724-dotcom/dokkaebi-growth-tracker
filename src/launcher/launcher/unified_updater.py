@@ -26,6 +26,23 @@ APP_TAG=re.compile(r'^tracker-v\d+\.\d+\.\d+$')
 LAUNCHER_TAG=re.compile(r'^launcher-v\d+\.\d+\.\d+$')
 LAUNCHER_VERSION='0.0.0'
 
+# Explicit reset policy v1: 8.x/9.x belong to the legacy epoch of EACH
+# component. Tagged 0.x starts the successor epoch. 8/9 remain reserved;
+# returning to them is a manual rollback, never an automatic update.
+def release_order(kind,version):
+    if kind not in ('app','launcher'):
+        raise ValueError('Unknown update component')
+    number=version_tuple(version)
+    return (0 if number[0] in (8,9) else 1, number)
+
+
+def is_update(info,kind,current):
+    if kind not in ('app','launcher') or info.get('kind')!=kind:return False
+    prefix='tracker-v' if kind=='app' else 'launcher-v'
+    version=info.get('version','')
+    if info.get('tag')!=prefix+version:return False
+    return release_order(kind,version)>release_order(kind,current)
+
 
 def active_launcher_version(root):
     path=Path(root)/'launcher_runtime.json'
@@ -80,7 +97,7 @@ def get_available_releases(repo):
     for rel in data:
         for kind in ('app','launcher'):
             item=_release_item(rel,kind)
-            if item and (result[kind] is None or version_tuple(item['version'])>version_tuple(result[kind]['version'])):
+            if item and (result[kind] is None or release_order(kind,item['version'])>release_order(kind,result[kind]['version'])):
                 result[kind]=item
     return result
 
@@ -157,7 +174,9 @@ class LauncherManager:
         version=version or self.active()
         version='.'.join(map(str,version_tuple(version)))
         if version=='0.0.0':return self.root/'launcher.pyw'
-        return self.versions/version/'launcher.pyw'
+        canonical=self.versions/version/'launcher.pyw'
+        legacy=self.versions/('v'+version)/'launcher.pyw'
+        return canonical if canonical.is_file() or not legacy.is_file() else legacy
 
     def install(self, package:bytes, version:str):
         version='.'.join(map(str,version_tuple(version)))
