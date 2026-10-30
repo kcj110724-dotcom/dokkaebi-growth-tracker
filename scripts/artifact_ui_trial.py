@@ -86,7 +86,11 @@ def run(args):
         def supply(release,on_progress=None):
             def progress(done,total):
                 if on_progress:on_progress(done,total)
-                if args.fault=='interrupted' and done>=262144:raise OSError('Injected transfer interruption')
+                if args.fault=='interrupted' and done>=262144:
+                    results['interruption_injected']=True
+                    results['bytes_received_before_interruption']=done
+                    results['expected_download_bytes']=total
+                    raise ConnectionResetError('Injected transfer interruption')
             data=download(launcher,args.git,base/'download.zip',progress)
             files, metadata=verify_payload(data,launcher)
             payload=files['dokkaebi-launcher.zip']
@@ -171,6 +175,10 @@ finally:
             if host_process:host_process.wait(timeout=20)
             after=hashes(root)
             results['preserved']=all(after.get(n)==h for n,h in before.items() if n not in {'launch_host.pyw','launcher_runtime.json'})
+            if args.fault=='interrupted':
+                results['runtime_unchanged']=after.get('launcher_runtime.json')==before.get('launcher_runtime.json')
+                results['candidate_not_installed']=not (root/'launcher_versions'/info['version']).exists()
+                results['partial_archive_not_saved']=not (base/'download.zip').exists()
             results['original_unchanged']=hashes(source)==before
             output.write_text(json.dumps(results,indent=2),encoding='utf-8')
             print(json.dumps(results,indent=2),flush=True)
