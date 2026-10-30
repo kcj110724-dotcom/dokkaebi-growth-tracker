@@ -15,7 +15,9 @@ class HostTransitionTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
-        self.base = Path(self.temp.name)
+        # Windows CI TEMP may use RUNNER~1 while transition resolves runneradmin.
+        # Fault injection must target the same canonical destination.
+        self.base = Path(self.temp.name).resolve()
         self.root = self.base / 'installation'
         self.root.mkdir()
         self.package = self.base / 'package'
