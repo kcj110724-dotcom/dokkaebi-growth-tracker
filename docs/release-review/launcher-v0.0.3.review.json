@@ -1,0 +1,14 @@
+{
+  "approved": false,
+  "host_transition_sha256": "badbe51ed3bfce2429369c195ea3d39ebe2487c2f5288d23659b99fd73ff8ba4",
+  "mode": "artifact",
+  "component": "launcher",
+  "version": "0.0.3",
+  "tag": "launcher-v0.0.3",
+  "source_sha": "078fc43c958d797ebf6f8200a27d9ffc543b1d83",
+  "build_run_id": 41050222770,
+  "sha256": "78e04820fe82b7ce7b682b0afd348e304c6dcd111c1317413e976d4f1d030d00",
+  "title": "도깨비의 세계 런처 v0.0.3",
+  "notes": "검토 초안이며 게시 승인 아님. main CI의 실행 ID와 source SHA로 교체한 뒤 정확한 패키지 승인이 필요함. 최초 호스트 전환 필요. healthy 이후 자동 롤백 미지원.",
+  "latest": false
+}

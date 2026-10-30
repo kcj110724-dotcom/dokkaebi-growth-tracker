@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'scripts'))
 from build_package import SOURCE_FILES, build
 from prepare_release import load_request, prepare, safe_member, validate_zip
-from publish_release import publish
+from publish_release import publish, prepare_transition
 from release_gate import check_environment, check_request, check_run
 
 SHA = 'a' * 40
@@ -29,6 +29,35 @@ def archive_bytes(members):
 
 
 class DistributionTests(unittest.TestCase):
+    def test_launcher_transition_approval_and_payload_binding(self):
+        from build_transition import build as build_transition
+        obj={**self.request(),'component':'launcher'}
+        compatibility={'status':'verified','evidence':['review.md']}
+        with self.assertRaises(SystemExit):check_request(obj,compatibility)
+        with tempfile.TemporaryDirectory() as folder:
+            source=Path(folder)/'source'; out=Path(folder)/'out'
+            archive=build_transition(SHA,source)
+            obj['host_transition_sha256']=hashlib.sha256(archive.read_bytes()).hexdigest()
+            check_request(obj,compatibility)
+            prepare_transition(obj,source,out)
+            self.assertEqual((out/archive.name).read_bytes(),archive.read_bytes())
+            with self.assertRaises(ValueError):prepare_transition({**obj,'source_sha':'b'*40},source,out)
+            archive.write_bytes(archive.read_bytes()+b'changed')
+            with self.assertRaises(ValueError):prepare_transition(obj,source,out)
+
+    def test_launcher_uploads_all_four_assets_before_publication(self):
+        obj={**self.request(),'component':'launcher','tag':'launcher-v0.0.3'}
+        calls=[]
+        def fail_upload(args,**kwargs):
+            calls.append(args)
+            if args[1:3]==['release','upload']:raise subprocess.CalledProcessError(1,args)
+        with self.assertRaises(subprocess.CalledProcessError):publish(obj,'owner/repo',fail_upload)
+        upload=calls[-1]
+        for name in ['dokkaebi-launcher.zip','dokkaebi-launcher.zip.sha256',
+                     'dokkaebi-host-transition.zip','dokkaebi-host-transition.zip.sha256']:
+            self.assertIn('.release-out/'+name,upload)
+        self.assertFalse(any(c[1:3]==['release','edit'] for c in calls))
+
     @classmethod
     def setUpClass(cls):
         cls.folder = tempfile.TemporaryDirectory()

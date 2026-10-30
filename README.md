@@ -1,4 +1,6 @@
 # dokkaebi-growth-tracker
+
+런처 정식 출시와 최초 호스트 전환: [사용자 절차·승인 조건](docs/LAUNCHER_RELEASE_PROCEDURE.md).
 도깨비의 세계 성장 기록기 자동 업데이트
 
 기존 성장 기록기 소스는 `src/tracker/`에서 관리합니다. 원본 v0.0.1 ZIP의

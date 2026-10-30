@@ -22,6 +22,8 @@ def check_request(obj, compatibility):
         fail('positive build run ID required')
     if type(obj.get('latest')) is not bool:
         fail('explicit latest policy required after launcher discovery has been verified')
+    if obj.get('component') == 'launcher' and not re.fullmatch(r'[0-9a-f]{64}', obj.get('host_transition_sha256', '')):
+        fail('launcher release requires an approved host transition package SHA-256')
     if (compatibility.get('status') != 'verified' or
         not compatibility.get('evidence') or
         not all(isinstance(p, str) and p for p in compatibility['evidence'])):
@@ -76,3 +78,4 @@ if __name__ == '__main__':
     with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
         output.write(f'run_id={obj["build_run_id"]}\n')
         output.write(f'artifact=windows-{obj["component"]}-{obj["source_sha"]}\n')
+        output.write('bootstrap=' + ('windows-bootstrap-' + obj['source_sha'] if obj['component']=='launcher' else '') + '\n')

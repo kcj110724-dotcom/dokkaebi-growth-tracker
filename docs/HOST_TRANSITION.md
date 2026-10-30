@@ -10,7 +10,9 @@
 
 1. 평소 사용하는 바로가기의 설치 루트를 확인한다. 런처와 기록기를 모두 종료한다.
    도구의 `--apps-closed`는 사용자 확인이며 프로세스를 자동 종료하거나 탐지하지 않는다.
-2. 승인된 CI run/source SHA의 `windows-bootstrap-<SHA>` artifact를 내려받는다.
+2. 정식 사용자 배포는 공식 `launcher-v0.0.3` Release에 함께 첨부된
+   `dokkaebi-host-transition.zip`을 받는다. 게시 전 검토자는 승인된 CI의
+   `windows-bootstrap-<SHA>` artifact를 사용한다.
    ZIP SHA-256을 승인 기록의 값 및 .sha256과 비교한다. 동일 다운로드의 체크섬만으로
    배포자 신뢰가 생기는 것은 아니므로 GitHub 계정/저장소/run/커밋도 확인한다.
 3. `dokkaebi-host-transition.zip`을 **설치 폴더 밖**의 새 폴더에 푼다.
