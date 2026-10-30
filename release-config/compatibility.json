@@ -1,6 +1,6 @@
 {
   "status": "pending",
   "launcher_version": "0.0.3",
-  "reason": "Full GUI startup and pre-healthy failure recovery tested on a private 0.0.1 installation copy with fixed host. Candidate 0.0.3 avoids reuse of supplied 0.0.2. Live discovery/download/completion/restart UI flow, bootstrap rollout, and post-healthy crash rollback remain unverified or unsupported. Publishing remains blocked.",
+  "reason": "Full 0.0.3 GUI startup, live no-update discovery and pre-healthy recovery passed on a private 0.0.1 installation copy with fixed host. Candidate version remains subject to owner approval. Published launcher download/completion/restart UI flow and first-time bootstrap rollout remain pending; post-healthy crash auto-rollback is unsupported. Publishing remains blocked.",
   "evidence": []
 }
