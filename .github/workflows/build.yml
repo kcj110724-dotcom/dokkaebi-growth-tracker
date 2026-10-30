@@ -38,6 +38,8 @@ jobs:
           Compress-Archive -Path src/bootstrap/* -DestinationPath dist/bootstrap/dokkaebi-bootstrap.zip
           $digest = (Get-FileHash dist/bootstrap/dokkaebi-bootstrap.zip -Algorithm SHA256).Hash.ToLowerInvariant()
           "$digest  dokkaebi-bootstrap.zip" | Set-Content -Encoding utf8 dist/bootstrap/dokkaebi-bootstrap.zip.sha256
+      - name: Build one-time host transition package for review
+        run: python scripts/build_transition.py --source-sha "$env:GITHUB_SHA" --output dist/bootstrap
       - name: Upload stable host review artifact
         uses: actions/upload-artifact@v4
         with:

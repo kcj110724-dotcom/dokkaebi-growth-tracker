@@ -15,9 +15,12 @@ import subprocess
 import sys
 import tempfile
 import time
+import zipfile
 from unittest.mock import patch
 from build_package import build
 from check_installed_transition import hashes
+from build_transition import build as build_host_transition
+import host_transition
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -35,7 +38,15 @@ def run(source, sha, observe):
         with tempfile.TemporaryDirectory(prefix='full-launcher-', dir=scratch) as folder:
             root = Path(folder) / 'installation'
             shutil.copytree(source, root)
-            shutil.copyfile(ROOT / 'src/bootstrap/launch_host.pyw', root / 'launch_host.pyw')
+            archive = build_host_transition(sha, Path(folder) / 'transition-build')
+            package = Path(folder) / 'transition-package'
+            # Locally generated allowlisted package, never an untrusted download.
+            with zipfile.ZipFile(archive) as bundle:
+                assert set(bundle.namelist()) == {'launch_host.pyw','host_transition.py','transition.json','README.md'}
+                bundle.extractall(package)
+            backup = Path(folder) / 'original-host'
+            host_transition.apply(root, package, backup)
+            results['checks']['transition_package_applied'] = True
             sys.path.insert(0, str(root / 'launcher_versions/0.0.1/launcher'))
             import unified_updater as updater
             manager = updater.LauncherManager(root)
@@ -119,6 +130,9 @@ def run(source, sha, observe):
                 # Only filenames, never record/settings contents. Keep output local.
                 results['changed_existing_paths'] = changed
                 results['all_existing_data_settings_preserved'] = not changed
+                host_transition.rollback(root, backup)
+                assert (root / 'launch_host.pyw').read_bytes() == (source / 'launch_host.pyw').read_bytes()
+                results['checks']['transition_package_rollback'] = True
             finally:
                 for process in children:
                     stop(process)
