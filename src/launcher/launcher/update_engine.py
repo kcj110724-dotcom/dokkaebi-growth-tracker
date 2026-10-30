@@ -93,9 +93,13 @@ def github_get(url, limit=MAX_ZIP, headers=None, on_progress=None):
     except urllib.error.HTTPError as ex:
         if ex.code == 404:
             raise RuntimeError('GitHub 저장소 또는 공개된 Release를 찾지 못했어. 저장소 주소와 배포 상태를 확인해 줘.') from ex
+        if ex.code == 429 or (ex.code == 403 and ex.headers.get('X-RateLimit-Remaining') == '0'):
+            raise RuntimeError('GitHub API 요청 한도를 초과했어. 잠시 뒤 다시 확인해 줘.') from ex
         if ex.code == 403:
-            raise RuntimeError('GitHub API 요청이 제한됐어. 잠시 뒤 다시 확인해 줘.') from ex
+            raise RuntimeError('GitHub 접근이 거부됐어. 저장소 공개 여부와 네트워크 접근 정책을 확인해 줘.') from ex
         raise
+    except urllib.error.URLError as ex:
+        raise RuntimeError('GitHub에 연결하지 못했어. 인터넷·DNS·프록시·인증서 설정을 확인해 줘. 업데이트 없음으로 판단하지 않았어.') from ex
     if len(payload)>limit:
         raise ValueError('업데이트 파일 크기가 허용 범위를 넘었어.')
     return payload

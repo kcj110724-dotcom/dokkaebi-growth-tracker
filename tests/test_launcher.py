@@ -21,6 +21,7 @@ class LauncherTests(unittest.TestCase):
         for component in ('tracker', 'launcher'):
             build(component, 'a' * 40, cls.folder / component)
         cls.tracker = (cls.folder / 'tracker/dokkaebi-app.zip').read_bytes()
+        cls.launcher_version = json.loads((ROOT / 'release-config/launcher.json').read_text())['version']
         cls.launcher = (cls.folder / 'launcher/dokkaebi-launcher.zip').read_bytes()
 
     @classmethod
@@ -28,8 +29,15 @@ class LauncherTests(unittest.TestCase):
         cls.temp.cleanup()
 
     def test_real_launcher_manifest(self):
-        files = updater.validate_launcher_archive(self.launcher, '0.0.2')
+        files = updater.validate_launcher_archive(self.launcher, self.launcher_version)
         self.assertEqual(len(files), 93)
+
+    def test_release_candidate_matches_ui_and_does_not_reuse_supplied_version(self):
+        self.assertEqual(self.launcher_version, '0.0.3')
+        source = (ROOT / 'src/launcher/launcher.pyw').read_text(encoding='utf-8')
+        self.assertIn("DISPLAY_VERSION = 'v" + self.launcher_version + "'", source)
+        self.assertTrue(updater.is_update({'kind':'launcher', 'version':self.launcher_version,
+                         'tag':'launcher-v'+self.launcher_version}, 'launcher', '0.0.2'))
 
     def test_separate_discovery(self):
         def release(kind, version):
@@ -63,9 +71,9 @@ class LauncherTests(unittest.TestCase):
             before[store.settings_file] = store.settings_file.read_bytes()
             store.install_package(self.tracker, '0.0.1')
             manager = updater.LauncherManager(root)
-            manager.install(self.launcher, '0.0.2')
+            manager.install(self.launcher, self.launcher_version)
             self.assertEqual(store.state['current'], '0.0.1')
-            self.assertEqual(manager.active(), '0.0.2')
+            self.assertEqual(manager.active(), self.launcher_version)
             self.assertEqual(manager.rollback(), '0.0.0')
             self.assertEqual(store.rollback(), '8.0.0')
             self.assertTrue(all(p.read_bytes()==b for p,b in before.items()))
@@ -92,7 +100,7 @@ class LauncherTests(unittest.TestCase):
             manager = updater.LauncherManager(folder)
             with patch.object(updater, 'atomic_json', side_effect=OSError('disk full')):
                 with self.assertRaises(OSError):
-                    manager.install(self.launcher, '0.0.2')
+                    manager.install(self.launcher, self.launcher_version)
             self.assertEqual(manager.active(), '0.0.0')
 
 if __name__ == '__main__':

@@ -89,8 +89,8 @@ class MigrationInstallTests(unittest.TestCase):
                 prior=root/'launcher_versions'/('v'+old)
                 prior.mkdir();(prior/'launcher.pyw').write_text('pass')
                 engine.atomic_json(manager.state_path,{'current':old,'previous':[]})
-                manager.install(self.launcher,'0.0.2')
-                self.assertEqual(manager.active(),'0.0.2')
+                manager.install(self.launcher,self.launcher_version)
+                self.assertEqual(manager.active(),self.launcher_version)
                 self.assertEqual(manager.rollback(),old)
                 self.assertTrue(manager.entry().samefile(prior/'launcher.pyw'))
 
@@ -101,6 +101,6 @@ class MigrationInstallTests(unittest.TestCase):
             engine.atomic_json(manager.state_path,{'current':'9.0.0','previous':[]})
             before=manager.state_path.read_bytes()
             with patch('unified_updater.shutil.copyfileobj',side_effect=KeyboardInterrupt):
-                with self.assertRaises(KeyboardInterrupt):manager.install(self.launcher,'0.0.2')
+                with self.assertRaises(KeyboardInterrupt):manager.install(self.launcher,self.launcher_version)
             self.assertEqual(manager.state_path.read_bytes(),before)
             self.assertEqual(list(manager.versions.glob('.stage-*')),[])

@@ -49,6 +49,8 @@ def check(installation, source_sha):
             manager = old_updater.LauncherManager(root)
             metadata = build('launcher', source_sha, Path(folder) / 'package')
             payload = (Path(folder) / 'package/dokkaebi-launcher.zip').read_bytes()
+            candidate = metadata['version']
+            result['candidate_version'] = candidate
             result['package_sha256'] = metadata['sha256']
             result['old_updater_sha256'] = before['launcher_versions/0.0.1/launcher/unified_updater.py']
             result['old_host_sha256'] = before['launch_host.pyw']
@@ -66,20 +68,20 @@ def check(installation, source_sha):
             assert state_file.read_bytes() == initial_state
             with patch.object(old_updater.shutil, 'copyfileobj', side_effect=KeyboardInterrupt):
                 try:
-                    manager.install(payload, '0.0.2')
+                    manager.install(payload, candidate)
                 except KeyboardInterrupt:
                     pass
             assert state_file.read_bytes() == initial_state
-            assert not (root / 'launcher_versions/0.0.2').exists()
+            assert not (root / ('launcher_versions/' + candidate)).exists()
             assert not list((root / 'launcher_versions').glob('.stage-*'))
             result['old_updater_interruption_preserves_state'] = True
             with patch.object(old_engine, 'github_get', side_effect=[
                     (metadata['sha256'] + '  dokkaebi-launcher.zip').encode(), payload]):
                 verified = old_engine.get_release_zip(info)
-            manager.install(verified, '0.0.2')
+            manager.install(verified, candidate)
             pending = state_file.read_bytes()
             assert manager.read()['previous'][0] == '0.0.1'
-            result['old_updater_installs_real_002_package'] = True
+            result['old_updater_installs_real_candidate_package'] = True
             # Exercise original Windows host entry point. It fails before spawning UI.
             run = subprocess.run([sys.executable, str(root / 'launch_host.pyw')],
                                  cwd=root, capture_output=True, timeout=20,
@@ -96,13 +98,13 @@ def check(installation, source_sha):
             host.ROOT, host.STATE = root, state_file
             with patch.object(host.subprocess, 'Popen') as spawn:
                 host.main()
-                assert Path(spawn.call_args.args[0][1]).samefile(root / 'launcher_versions/0.0.2/launcher.pyw')
+                assert Path(spawn.call_args.args[0][1]).samefile(root / ('launcher_versions/' + candidate + '/launcher.pyw'))
                 assert host.load()['pending']['attempts'] == 1
                 # No healthy acknowledgement: next invocation must restore 0.0.1.
                 host.main()
                 assert Path(spawn.call_args.args[0][1]).samefile(root / 'launcher_versions/0.0.1/launcher.pyw')
             assert host.load()['current'] == '0.0.1' and 'pending' not in host.load()
-            result['fixed_host_selection_without_healthy'] = '0.0.2 then 0.0.1 on next invocation; spawn intercepted'
+            result['fixed_host_selection_without_healthy'] = candidate + ' then 0.0.1 on next invocation; spawn intercepted'
             after_copy = hashes(root)
             changed = [name for name, digest in before.items()
                        if name != 'launcher_runtime.json' and after_copy.get(name) != digest]

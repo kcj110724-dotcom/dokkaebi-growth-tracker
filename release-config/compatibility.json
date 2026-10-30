@@ -1,6 +1,6 @@
 {
   "status": "pending",
-  "launcher_version": "0.0.2",
-  "reason": "Host import collision, component-scoped legacy epoch reset, and v-prefixed directory compatibility fixed in repository. Isolated tests cover recovery. Real installed bootstrap/updater has not been replaced; rollout requires explicit approval and a new release version. Publishing remains blocked.",
+  "launcher_version": "0.0.3",
+  "reason": "Full GUI startup and pre-healthy failure recovery tested on a private 0.0.1 installation copy with fixed host. Candidate 0.0.3 avoids reuse of supplied 0.0.2. Live discovery/download/completion/restart UI flow, bootstrap rollout, and post-healthy crash rollback remain unverified or unsupported. Publishing remains blocked.",
   "evidence": []
 }
