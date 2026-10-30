@@ -1,5 +1,9 @@
 # 중단된 artifact GUI 시험 완료 기록
 
+이 문서는 당시 격리 시험 기록이다. 이후 실제 호스트 전환과 사용자 확인 결과는
+[최신 출시 검토](release-review/host-transition-acceptance.md)를 참고한다.
+아래 실제 설치 보류 항목은 당시 상태이며 공개 Release 경로는 여전히 미검증이다.
+
 실제 제품 파일/UI/Release 조회 코드는 변경하지 않았다. 이번 추가 파일은 시험 드라이버,
 다운로드 도구, 고정 artifact 정보 및 증빙이다. compatibility.json은 pending 유지.
 
