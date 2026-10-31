@@ -33,7 +33,7 @@ class LauncherTests(unittest.TestCase):
         self.assertEqual(len(files), 93)
 
     def test_release_candidate_matches_ui_and_does_not_reuse_supplied_version(self):
-        self.assertEqual(self.launcher_version, '0.0.3')
+        self.assertEqual(self.launcher_version, '0.0.4')
         source = (ROOT / 'src/launcher/launcher.pyw').read_text(encoding='utf-8')
         self.assertIn("DISPLAY_VERSION = 'v" + self.launcher_version + "'", source)
         self.assertTrue(updater.is_update({'kind':'launcher', 'version':self.launcher_version,
