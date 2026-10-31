@@ -1,0 +1,7 @@
+{
+  "component": "tracker",
+  "version": "0.0.1",
+  "source": "src/tracker",
+  "entrypoint": "tracker.py",
+  "asset": "dokkaebi-app.zip"
+}

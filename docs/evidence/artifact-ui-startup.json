@@ -1,0 +1,17 @@
+{
+  "run_id": 41003472180,
+  "source_sha": "9b742f4977101c8760c1a76cbfe57fc92d06a361",
+  "launcher_artifact_sha256": "sha256:2e26602286e8bababc65ae712f53d83c98c4b28131dc18a1d336a3bd168f7997",
+  "payload_sha256": "78e04820fe82b7ce7b682b0afd348e304c6dcd111c1317413e976d4f1d030d00",
+  "fault": "startup",
+  "ui_stages": [
+    "home",
+    "update",
+    "progress",
+    "restart_required"
+  ],
+  "actual_download_and_hash_verified": true,
+  "startup_rollback": true,
+  "preserved": true,
+  "original_unchanged": true
+}

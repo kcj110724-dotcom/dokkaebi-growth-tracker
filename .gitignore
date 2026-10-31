@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+.release-out/
+dist/
+.venv/
+user_data/
+backups/
+ocr_errors.log

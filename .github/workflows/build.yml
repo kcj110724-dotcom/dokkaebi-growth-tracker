@@ -1,0 +1,87 @@
+name: Dokkaebi Windows build and test
+
+on:
+  pull_request:
+  push:
+    branches: [main, 'codex/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  tracker:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test packaging, release gates and data compatibility
+        run: python -m unittest discover -s tests -v
+      - name: Check owner approval configuration without deploying
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PYTHONPATH: scripts
+        run: python -c "import os; from release_gate import check_environment, gh_json; repo=os.environ['GITHUB_REPOSITORY']; check_environment(gh_json('repos/'+repo+'/environments/production-release'), repo.split('/')[0]); print('Owner approval configuration verified; no deployment requested')"
+      - name: Install existing Windows dependencies
+        run: python -m pip install -r src/tracker/requirements.txt
+      - name: Package stable host for review only
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path dist/bootstrap -Force | Out-Null
+          Compress-Archive -Path src/bootstrap/* -DestinationPath dist/bootstrap/dokkaebi-bootstrap.zip
+          $digest = (Get-FileHash dist/bootstrap/dokkaebi-bootstrap.zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$digest  dokkaebi-bootstrap.zip" | Set-Content -Encoding utf8 dist/bootstrap/dokkaebi-bootstrap.zip.sha256
+      - name: Build one-time host transition package for review
+        run: python scripts/build_transition.py --source-sha "$env:GITHUB_SHA" --output dist/bootstrap
+      - name: Upload stable host review artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-bootstrap-${{ github.sha }}
+          path: dist/bootstrap/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Verify launcher popup rendering
+        run: python scripts/preview_launcher.py
+      - name: Build independent launcher payload
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: python scripts/build_package.py --component launcher --source-sha "$env:SOURCE_SHA" --output dist/launcher
+      - name: Upload launcher candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-launcher-${{ github.sha }}
+          path: dist/launcher/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Build existing launcher-compatible Python payload
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: python scripts/build_package.py --source-sha "$env:SOURCE_SHA"
+      - name: Smoke test the packaged dashboard in isolated user_data
+        run: python scripts/smoke_tracker.py dist/tracker/dokkaebi-app.zip
+      - name: Record build dependency versions
+        shell: pwsh
+        run: python -m pip freeze | Set-Content -Encoding utf8 dist/tracker/dependencies.txt
+      - name: Upload reviewable package (never a Release)
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-tracker-${{ github.sha }}
+          path: dist/tracker/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Summarize the exact approval candidate
+        shell: pwsh
+        run: |
+          '### Windows tracker build' >> $env:GITHUB_STEP_SUMMARY
+          "Commit: $env:GITHUB_SHA" >> $env:GITHUB_STEP_SUMMARY
+          "Run: $env:GITHUB_RUN_ID" >> $env:GITHUB_STEP_SUMMARY
+          Get-Content dist/tracker/build-info.json >> $env:GITHUB_STEP_SUMMARY
+          '### Windows launcher build' >> $env:GITHUB_STEP_SUMMARY
+          Get-Content dist/launcher/build-info.json >> $env:GITHUB_STEP_SUMMARY

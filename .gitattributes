@@ -1,0 +1,7 @@
+* text=auto eol=lf
+*.zip -text
+*.png -text
+*.jpg -text
+# Preserve the exact original payload bytes even on Windows autocrlf checkouts.
+src/tracker/** -text
+src/launcher/** -text

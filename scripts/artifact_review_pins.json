@@ -1,0 +1,16 @@
+[
+  {
+    "component": "bootstrap",
+    "id": 12954785997,
+    "digest": "sha256:9d64f34744bbde065ff721463bac3560d48818b75723d04f1946e5ebba79c191",
+    "source_sha": "9b742f4977101c8760c1a76cbfe57fc92d06a361",
+    "run_id": 41003472180
+  },
+  {
+    "component": "launcher",
+    "id": 12954108935,
+    "digest": "sha256:2e26602286e8bababc65ae712f53d83c98c4b28131dc18a1d336a3bd168f7997",
+    "source_sha": "9b742f4977101c8760c1a76cbfe57fc92d06a361",
+    "run_id": 41003472180
+  }
+]
