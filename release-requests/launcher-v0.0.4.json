@@ -1,0 +1,14 @@
+{
+  "approved": true,
+  "mode": "artifact",
+  "component": "launcher",
+  "version": "0.0.4",
+  "tag": "launcher-v0.0.4",
+  "source_sha": "d2e34111b4c195bdf5ff5887523e5456a70a66c2",
+  "build_run_id": 41191489624,
+  "sha256": "82c742661baf4cb8265021722ea1b8d5da647074276e39ec88e6461d1881167b",
+  "host_transition_sha256": "714b6c229d9f8a27aa57eaeb793251f57801347e505b519c3986dc72636c2e2c",
+  "title": "도깨비의 세계 런처 v0.0.4",
+  "notes": "런처 v0.0.4. 정상 시작 이후 비정상 종료(0이 아닌 종료 코드)를 감지하면 다음 실행에서 이전 런처 버전을 사용합니다. 기존 디자인·배경·기록·설정은 유지합니다. 성장 기록기 v0.0.1은 별도 유지됩니다. 기존 v0.0.3 사용자의 새 호스트 기능은 Release에 첨부된 호스트 전환 패키지를 검사·백업 후 최초 1회 적용해야 합니다. 런처 ZIP은 호스트를 자동 교체하지 않습니다. 모든 전원 차단 및 비정상 종료를 복구한다고 보장하지 않습니다. 이 Release는 성공한 Windows CI artifact에 고정되어 SHA-256을 검증합니다.",
+  "latest": false
+}
