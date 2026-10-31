@@ -1,4 +1,4 @@
-"""Dokkaebi World Growth Tracker — visual launcher · version v0.0.3.
+"""Dokkaebi World Growth Tracker — visual launcher · version v0.0.4.
 
 Offline-first desktop launcher; GitHub Release checks and safely verified app
 updates are delegated to launcher/update_engine.py. All user records survive
@@ -44,7 +44,7 @@ NAV=[('home','⌂','홈'),('notes','▤','패치노트'),('versions','◷','버�
 INK='#F5F5FF'; MUTED='#BDCAE9'; CYAN='#61E8EF'; GOLD='#F3D28F'; PURPLE='#BDA0FF'
 DEEP='#080E29'; DARK='#101B3E'
 # Preview-only labels; never modify real versions used by updater/rollback.
-DISPLAY_VERSION = 'v0.0.3'
+DISPLAY_VERSION = 'v0.0.4'
 VERSION_INLINE_RE = re.compile(r'(?<![A-Za-z0-9])v?\d+\.\d+\.\d+(?![A-Za-z0-9])')
 def display_version(real=None):
     return 'v' + str(real).lstrip('v') if real is not None else DISPLAY_VERSION

@@ -1,7 +1,7 @@
 {
   "status": "verified",
-  "launcher_version": "0.0.3",
-  "reason": "Verified only for the owner-approved pre-release compatibility scope for launcher 0.0.3, explicitly authorized on 2026-10-31 against review baseline 0fdf3c3947b74d78faae5a1135c035e54a7c7ccf. Evidence covers the real one-time host transition and old launcher startup, owner-reported tracker records/settings display, isolated Actions-artifact GUI update and healthy restart, corrupt/interrupted download preservation, and pre-healthy failure recovery on the next host launch. Remaining limitations were disclosed and accepted for this scope: post-healthy crash auto-rollback is unsupported; public GitHub Release delivery requires post-publication checks; not all network failures or forced power loss were tested; real-user 0.0.3 installation/restart has not occurred. This is not approval to merge, remove Draft status, create tags, publish, approve a release request/environment, or install 0.0.3.",
+  "launcher_version": "0.0.4",
+  "reason": "v0.0.4 extends the already verified v0.0.3 launcher with post-healthy nonzero-exit rollback and host transition from verified v0.0.3, without UI/data changes. Release must remain blocked until Windows CI completes successfully and the published request pins both verified artifacts to the exact source SHA. Power loss, exit-code-zero GUI failures and real-PC behavior remain outside the automated test scope.",
   "evidence": [
     "docs/release-review/host-transition-acceptance.md",
     "docs/ARTIFACT_GUI_RESULTS.md",
@@ -10,6 +10,7 @@
     "docs/evidence/artifact-ui-success.json",
     "docs/evidence/artifact-ui-corrupt.json",
     "docs/evidence/artifact-ui-interrupted.json",
-    "docs/evidence/artifact-ui-startup.json"
+    "docs/evidence/artifact-ui-startup.json",
+    "docs/V004_CRASH_RECOVERY.md"
   ]
 }

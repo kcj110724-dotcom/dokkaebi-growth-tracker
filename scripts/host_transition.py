@@ -11,6 +11,8 @@ from pathlib import Path
 import uuid
 
 OLD_HOST = '84b0026111980ac2ed9c2c4e4286eb8c2536d2d116f05a569c219247358c85db'
+PREVIOUS_HOST = '5b340c1fd9b6a8220e3832de627f9359b8e2c4d3a68c88f9e08584dfc216ad55'
+ALLOWED_OLD_HOSTS = (OLD_HOST, PREVIOUS_HOST)
 
 
 def digest(data):
@@ -48,12 +50,12 @@ def inspect(root, package):
         raise ValueError('Host payload SHA-256 mismatch')
     compile(payload, 'launch_host.pyw', 'exec')
     state = json.loads(checked(root / 'launcher_runtime.json').read_text(encoding='utf-8'))
-    if state.get('current') != '0.0.1' or state.get('pending'):
+    if state.get('current') not in ('0.0.1', '0.0.3', '0.0.4') or state.get('pending'):
         raise ValueError('Requires stable 0.0.1; pending updates need recovery first')
-    if not checked(root / 'launcher_versions/0.0.1/launcher.pyw').is_file():
+    if not checked(root / 'launcher_versions' / state['current'] / 'launcher.pyw').is_file():
         raise ValueError('Missing previous launcher entry')
     current = digest(host.read_bytes())
-    if current not in (OLD_HOST, manifest['new_sha256']):
+    if current not in (*ALLOWED_OLD_HOSTS, manifest['new_sha256']):
         raise ValueError('Unknown installed host; refusing overwrite')
     return root, payload, current
 
@@ -69,13 +71,13 @@ def apply(root, package, backup):
     backup.mkdir(parents=False)
     host = root / 'launch_host.pyw'
     original = host.read_bytes()
-    if digest(original) != OLD_HOST:
+    if digest(original) not in ALLOWED_OLD_HOSTS:
         raise ValueError('Host changed during preflight')
     with (backup / 'launch_host.pyw').open('xb') as stream:
         stream.write(original)
         stream.flush()
         os.fsync(stream.fileno())
-    receipt = {'schema':1, 'root':str(root), 'old_sha256':OLD_HOST,
+    receipt = {'schema':1, 'root':str(root), 'old_sha256':digest(original),
                'new_sha256':digest(payload)}
     replace(backup / 'receipt.json', json.dumps(receipt, indent=2).encode())
     try:
@@ -97,16 +99,16 @@ def rollback(root, backup):
     if receipt.get('schema') != 1 or checked(receipt['root']) != root:
         raise ValueError('Backup belongs to a different installation')
     original = checked(backup / 'launch_host.pyw').read_bytes()
-    if receipt.get('old_sha256') != OLD_HOST or digest(original) != OLD_HOST:
+    if receipt.get('old_sha256') not in ALLOWED_OLD_HOSTS or digest(original) != receipt.get('old_sha256'):
         raise ValueError('Backup SHA-256 mismatch')
     host = checked(root / 'launch_host.pyw')
     current = digest(host.read_bytes())
-    if current == OLD_HOST:
+    if current == digest(original):
         return 'already restored; no writes'
     if current != receipt['new_sha256']:
         raise ValueError('Host modified since transition; refusing overwrite')
     replace(host, original)
-    if digest(host.read_bytes()) != OLD_HOST:
+    if digest(host.read_bytes()) != digest(original):
         raise ValueError('Rollback verification failed; retain backup')
     return 'restored host only; runtime and user data unchanged'
 
