@@ -1,0 +1,14 @@
+{
+  "approved": true,
+  "mode": "artifact",
+  "component": "launcher",
+  "version": "0.0.3",
+  "tag": "launcher-v0.0.3",
+  "source_sha": "e8a650633b7a1416fcafd28efedb556c60dab6c5",
+  "build_run_id": 41161657818,
+  "sha256": "78e04820fe82b7ce7b682b0afd348e304c6dcd111c1317413e976d4f1d030d00",
+  "host_transition_sha256": "c8771a16fb05846c5188eb4fd7d7e7a37516026ae2c53cb335166d2775a5b2ee",
+  "title": "도깨비의 세계 런처 v0.0.3",
+  "notes": "런처 v0.0.3 정식 출시. 성장 기록기 v0.0.1은 별도 버전으로 유지합니다. 기존 기록·설정·배경을 보존합니다.\n\n기존 v0.0.1 사용자는 최초 1회 호스트 전환이 필요합니다. 설치 폴더 전체 백업 후 앱을 종료하고 동봉 host-transition 패키지의 README에 따라 SHA 확인 → inspect → apply → 기존 런처 정상 실행을 확인하세요. 이미 전환한 사용자는 다시 적용하지 않습니다.\n\n시작 정상 신호(healthy) 이전 실패는 다음 호스트 실행에서 이전 버전으로 복구합니다. healthy 이후 충돌 자동 롤백은 지원하지 않습니다. 모든 네트워크 장애·강제 전원 차단을 보장하지 않습니다. 공개 Release 전달 경로는 게시 후 확인합니다.\n\n검증: main Windows CI 66개 테스트, 격리된 artifact GUI 설치·재시작, 손상·다운로드 중단 보존, 실제 최초 호스트 전환. 개인 기록은 배포물에 포함하지 않습니다.",
+  "latest": false
+}
