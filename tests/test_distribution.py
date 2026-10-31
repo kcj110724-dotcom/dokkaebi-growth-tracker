@@ -211,7 +211,8 @@ class DistributionTests(unittest.TestCase):
             check_request(obj, {'status': 'verified', 'evidence': ['report.md']})
 
     def test_pending_launcher_compatibility_blocks_publish(self):
-        config = json.loads((ROOT / 'release-config/compatibility.json').read_text())
+        # Test the pending policy independently of the owner's current approval.
+        config = {'status': 'pending', 'evidence': ['report.md']}
         with self.assertRaises(SystemExit):
             check_request(self.request(), config)
 
